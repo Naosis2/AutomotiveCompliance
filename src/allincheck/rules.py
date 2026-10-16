@@ -5,6 +5,7 @@ from __future__ import annotations
 import re
 from collections import defaultdict
 from pathlib import Path
+from typing import Literal
 
 import yaml
 from pydantic import BaseModel, Field
@@ -20,10 +21,12 @@ class Rule(BaseModel):
     id: str
     title: str
     severity: Severity
+    confidence: Literal["high", "low"] = "high"
     version: int
     guideline_ref: str = ""
     patterns: list[str]
     exempt_patterns: list[str] = Field(default_factory=list)
+    required_present_patterns: list[str] = Field(default_factory=list)
     required_absent_patterns: list[str] = Field(default_factory=list)
     message: str
     fix_hint: str = ""
@@ -52,7 +55,13 @@ def load_rules(path: Path) -> RuleSet:
     """
     ruleset = RuleSet.model_validate(yaml.safe_load(path.read_text(encoding="utf-8")))
     for rule in ruleset.rules:
-        for pat in rule.patterns + rule.exempt_patterns + rule.required_absent_patterns:
+        all_patterns = (
+            rule.patterns
+            + rule.exempt_patterns
+            + rule.required_present_patterns
+            + rule.required_absent_patterns
+        )
+        for pat in all_patterns:
             re.compile(pat)
     return ruleset
 
@@ -81,6 +90,10 @@ def check_listing(dealer: str, listing: Listing, rules: RuleSet) -> list[Finding
                 break
         if match is None:
             continue
+        if not all(
+            re.search(p, cleaned, flags=re.IGNORECASE) for p in rule.required_present_patterns
+        ):
+            continue
         if any(re.search(p, cleaned, flags=re.IGNORECASE) for p in rule.required_absent_patterns):
             continue
         start = max(0, match.start() - SNIPPET_RADIUS)
@@ -92,6 +105,7 @@ def check_listing(dealer: str, listing: Listing, rules: RuleSet) -> list[Finding
                 rule_version=rule.version,
                 title=rule.title,
                 severity=rule.severity,
+                confidence=rule.confidence,
                 listing_url=listing.url,
                 evidence_text=snippet,
                 matched=re.sub(r"\s+", " ", match.group(0).lower()),

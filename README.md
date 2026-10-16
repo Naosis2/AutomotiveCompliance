@@ -20,4 +20,4 @@ Scans only the address you give it, politely, and stops if the site blocks it.
     pytest -q && ruff check . && mypy
 
 ## Status
-See docs/PROGRESS.md. Rules in `rules/on.yaml` are DRAFT placeholders until mapped to the brief.
+See docs/PROGRESS.md. Rules in `rules/on.yaml` come from an OMVIC advertising summary; confirm section numbers against the guideline.

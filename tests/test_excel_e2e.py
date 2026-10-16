@@ -37,13 +37,14 @@ def test_end_to_end_with_saved_pages(settings: Settings, tmp_path: Path) -> None
     dealer = Dealer(name="Test Motors", website_url="https://test.ca/", province="ON")
     result = scan_dealer(dealer, fetcher, RULES, settings)
     assert len(result.listings) == 2
-    assert [f.rule_id for f in result.findings] == ["DRAFT-FEE-01"]
+    assert [f.rule_id for f in result.findings if f.confidence == "high"] == ["FEE-01"]
 
     out = tmp_path / "r.xlsx"
     build_workbook([result], RULES, out)
     wb = load_workbook(out)
     assert wb.sheetnames == ["Summary", "Findings", "To review", "Listings", "Errors", "Rules"]
     assert wb["Findings"].max_row == 2
+    assert wb["To review"].max_row >= 2
     assert wb["Findings"].freeze_panes == "A2"
 
 
