@@ -1,0 +1,32 @@
+# DRAFT rule set for the Phase 0 pipeline demo.
+# The ids below are placeholders (DRAFT-*). In S6, map each to the brief's ON-xx id,
+# copy the guideline section and wording from docs/OMVIC_GUIDELINE.md, and have the
+# set reviewed before it appears in any customer report.
+version: 1
+effective_date: "2026-10-16"
+guideline_note: "Based on OMVIC's published Advertising Guideline (rev. 2024-12-02). Not legal advice."
+rules:
+  - id: DRAFT-FEE-01
+    title: Fees appear to be added on top of the advertised price
+    severity: high
+    version: 1
+    guideline_ref: "TODO: section from docs/OMVIC_GUIDELINE.md"
+    patterns:
+      - 'plus\s+(?:applicable\s+)?taxes\s+and\s+fees'
+      - 'plus\s+(?:dealer|admin\w*|doc\w*|freight|pdi)\s+fees?'
+    exempt_patterns:
+      - 'plus\s+hst\s+and\s+licen[cs]ing'
+    message: "Likely issue: a fee appears to be added on top of the advertised price. Please review."
+    fix_hint: "Include the fee in the advertised price, or remove it."
+  - id: DRAFT-PAY-01
+    title: A payment is shown without an APR
+    severity: medium
+    version: 1
+    guideline_ref: "TODO: section from docs/OMVIC_GUIDELINE.md"
+    patterns:
+      - '\$\s?\d[\d,]*(?:\.\d{2})?\s*(?:/|per\s+|a\s+)?\s*(?:bi-?weekly|weekly|month(?:ly)?|mo\b)'
+    required_absent_patterns:
+      - '\d+(?:\.\d+)?\s*%\s*(?:apr)?'
+      - '\bapr\b'
+    message: "Likely issue: a payment is shown without the APR or term. Please review."
+    fix_hint: "Show the APR and term next to the payment."
