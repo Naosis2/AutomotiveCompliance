@@ -1,0 +1,39 @@
+name: scan
+on:
+  workflow_dispatch:
+    inputs:
+      limit:
+        description: "Scan only the first N dealers (blank = all)"
+        required: false
+      save_html:
+        description: "Save fetched pages as an artifact (for test fixtures)"
+        type: boolean
+        default: false
+permissions:
+  contents: read
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -e .
+      - name: Scan
+        env:
+          ALLINCHECK_CONTACT_EMAIL: ${{ secrets.ALLINCHECK_CONTACT_EMAIL }}
+          LIMIT: ${{ inputs.limit }}
+          SAVE_HTML: ${{ inputs.save_html }}
+        run: |
+          args=""
+          if [[ "$LIMIT" =~ ^[0-9]+$ ]]; then args="$args --limit $LIMIT"; fi
+          if [ "$SAVE_HTML" = "true" ]; then args="$args --save-html"; fi
+          allincheck scan --dealers data/dealers.csv --out out $args
+      - uses: actions/upload-artifact@v4
+        with:
+          name: allincheck-results
+          path: out/
+          retention-days: 30

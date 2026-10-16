@@ -1,0 +1,148 @@
+# Ontario advertising rules, version 2.
+# Built from the OMVIC advertising summary Taylor supplied on 2026-10-16 (a third-party
+# exam-prep summary, not the guideline text). Before any rule appears in a paid report,
+# confirm its section number and wording against OMVIC's Advertising Guideline and
+# replace the guideline_ref placeholders. Ids are descriptive; map them to the brief's
+# ON-xx ids when docs/BRIEF.md is added.
+#
+# Low-confidence rules go to the "To review" sheet until their precision is measured.
+#
+# Planned, not expressible as page-text patterns (need the AI check or custom code):
+#   - current/previous model year vehicle not stated "used"
+#   - prior use (rental, police, taxi) not disclosed
+#   - ad photo does not match the advertised trim
+#   - sold vehicle still advertised; bait-and-switch
+version: 2
+effective_date: "2026-10-16"
+guideline_note: "Based on OMVIC's published Advertising Guideline. Not legal advice."
+rules:
+  - id: FEE-01
+    title: Fees appear to be added on top of the advertised price
+    severity: high
+    version: 2
+    guideline_ref: "All-in pricing (confirm section)"
+    patterns:
+      - 'plus\s+(?:applicable\s+)?(?:taxes\s+and\s+fees|fees)\b'
+      - 'plus\s+(?:dealer|admin\w*|doc\w*|freight|pdi|delivery|omvic|transaction)\b[^.]{0,30}?(?:fees?|charges?)?'
+      - '\bfreight\s*(?:and|&|\+)\s*pdi\s+(?:extra|additional|not\s+included|\$)'
+      - 'omvic\s+(?:fee|levy)\s+(?:extra|additional|not\s+included|\$)'
+      - '(?:admin\w*|documentation|doc)\s+fees?\s+(?:extra|additional|not\s+included|of\s+\$|\$)'
+    exempt_patterns:
+      - 'plus\s+hst\s+and\s+licen[cs]ing'
+      - 'plus\s+hst\s+and\s+licen[cs]e'
+      - 'plus\s+hst\b'
+      - 'plus\s+licen[cs]ing'
+    message: "Likely issue: a fee appears to be added on top of the advertised price. Please review."
+    fix_hint: "Include freight, PDI, administration and OMVIC fees in the advertised price."
+  - id: LEVY-01
+    title: Government levies appear to be added on top of the advertised price
+    severity: high
+    version: 1
+    guideline_ref: "All-in pricing: government levies (confirm section)"
+    patterns:
+      - '(?:plus|\+)\s+(?:a/?c|air[- ]?conditioning|tire|tyre|environmental|enviro)\s+(?:tax|levy|fee|charge)'
+      - '(?:a/?c|air[- ]?conditioning|tire|tyre)\s+(?:tax|levy)\s+(?:extra|additional|not\s+included|\$)'
+    message: "Likely issue: a government levy appears to be added on top of the advertised price. Please review."
+    fix_hint: "Include A/C and tire levies in the advertised price."
+  - id: TIED-01
+    title: Required products or add-ons may not be included in the advertised price
+    severity: medium
+    confidence: low
+    version: 1
+    guideline_ref: "All-in pricing: mandatory pre-installed products (confirm section)"
+    patterns:
+      - '(?:mandatory|required|must\s+purchase|must\s+buy)\s+(?:dealer[- ]installed\s+)?(?:products?|accessor\w+|packages?|add-?ons?|options?)'
+      - '(?:nitrogen|etching|wheel\s+locks?|paint\s+protection|rust\s*proof\w*)\b[^.]{0,40}(?:extra|additional|not\s+included|\$\s?\d)'
+    message: "Possible issue: a required or add-on product may be priced separately. Please review."
+    fix_hint: "Include mandatory pre-installed products in the advertised price."
+  - id: IDENT-01
+    title: No dealer phone number found on a page that shows a price
+    severity: medium
+    confidence: low
+    version: 1
+    guideline_ref: "Dealer identity and contact method (confirm section)"
+    patterns:
+      - '\$\s?\d{1,3}(?:,\d{3})+'
+    required_absent_patterns:
+      - '\(?\b\d{3}\)?[\s.\-]\d{3}[\s.\-]\d{4}\b'
+    message: "Possible issue: no registered contact method was found near this price. Please review."
+    fix_hint: "Show the dealer's registered name and phone number or address on the ad."
+  - id: ASIS-01
+    title: Vehicle shown as both as-is and certified
+    severity: high
+    confidence: low
+    version: 1
+    guideline_ref: "As-is vehicles (confirm section)"
+    patterns:
+      - '\bas[- ]is\b'
+    required_present_patterns:
+      - '\b(?:certified|certification)\b'
+    required_absent_patterns:
+      - 'not\s+drivable\s+and\s+not\s+certified'
+    message: "Likely issue: the ad mentions both 'as-is' and certification. Please review."
+    fix_hint: "An as-is vehicle must not be sold with a certification; use the required not-drivable wording."
+  - id: ASIS-02
+    title: As-is wording without the required statement
+    severity: medium
+    confidence: low
+    version: 1
+    guideline_ref: "As-is vehicles (confirm section)"
+    patterns:
+      - '\bas[- ]is\b'
+    required_absent_patterns:
+      - 'not\s+drivable\s+and\s+not\s+certified'
+    message: "Possible issue: 'as-is' appears without the required statement. Please review."
+    fix_hint: "Use: 'Vehicle is not drivable and not certified. Certification is available for $xxx.'"
+  - id: SCARCE-01
+    title: Limited supply claimed without the number of units
+    severity: medium
+    version: 1
+    guideline_ref: "Limited quantity advertising (confirm section)"
+    patterns:
+      - 'limited\s+(?:supply|quantit(?:y|ies)|stock|units|inventory)'
+      - 'while\s+(?:quantities|supplies|stock)\s+(?:last|remain)'
+    required_absent_patterns:
+      - '\b\d+\s+(?:units?|vehicles?|available|left|remaining|in\s+stock)\b'
+    message: "Likely issue: limited supply is claimed without stating how many units are available. Please review."
+    fix_hint: "State the exact number of units available."
+  - id: PAY-01
+    title: A payment is shown without an APR
+    severity: medium
+    version: 2
+    guideline_ref: "Credit and lease disclosures (confirm section)"
+    patterns:
+      - '\$\s?\d[\d,]*(?:\.\d{2})?\s*(?:/|per\s+|a\s+)?\s*(?:bi-?weekly|weekly|month(?:ly)?|mo\b)'
+    required_absent_patterns:
+      - '\d+(?:\.\d+)?\s*%\s*(?:apr)?'
+      - '\bapr\b'
+    message: "Likely issue: a payment is shown without the APR. Please review."
+    fix_hint: "Show the APR as prominently as the payment."
+  - id: PAY-02
+    title: A payment is shown without the term length
+    severity: medium
+    confidence: low
+    version: 1
+    guideline_ref: "Credit and lease disclosures (confirm section)"
+    patterns:
+      - '\$\s?\d[\d,]*(?:\.\d{2})?\s*(?:/|per\s+|a\s+)?\s*(?:bi-?weekly|weekly|month(?:ly)?|mo\b)'
+    required_absent_patterns:
+      - '\b\d{2,3}\s*(?:months?|mos?\b)'
+      - '\b\d{1,2}\s*(?:years?|yrs?)\b'
+      - '\bterm\b'
+    message: "Possible issue: a payment is shown without the term length. Please review."
+    fix_hint: "State the term length with the payment."
+  - id: LEASE-01
+    title: Lease advertised without the excess kilometre charge
+    severity: medium
+    confidence: low
+    version: 1
+    guideline_ref: "Lease disclosures (confirm section)"
+    patterns:
+      - '\blease\b[^.]{0,120}\$\s?\d'
+      - '\$\s?\d[^.]{0,120}\blease\b'
+    required_absent_patterns:
+      - 'excess\s+(?:kilometre|kilometer|km|mileage)'
+      - '(?:per|/)\s*(?:km|kilometre|kilometer)\b'
+      - '[¢c]\s*(?:per|/)\s*km'
+    message: "Possible issue: a lease is advertised without the excess kilometre charge. Please review."
+    fix_hint: "State the excess kilometre charge and the upfront payment."

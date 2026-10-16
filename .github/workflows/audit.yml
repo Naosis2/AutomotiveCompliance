@@ -1,0 +1,42 @@
+name: audit
+# Test scan of ONE dealer website, for demos and outreach research.
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "Dealer website address (e.g. https://dealer.ca)"
+        required: true
+      name:
+        description: "Dealer name (optional)"
+        required: false
+permissions:
+  contents: read
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+      - run: pip install -e .
+      - name: Audit
+        env:
+          ALLINCHECK_CONTACT_EMAIL: ${{ secrets.ALLINCHECK_CONTACT_EMAIL }}
+          DEALER_URL: ${{ inputs.url }}
+          DEALER_NAME: ${{ inputs.name }}
+        run: |
+          if [ -n "$DEALER_NAME" ]; then
+            allincheck audit "$DEALER_URL" --name "$DEALER_NAME" --out out
+          else
+            allincheck audit "$DEALER_URL" --out out
+          fi
+      - name: Show summary
+        run: cat out/*/summary.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: audit-results
+          path: out/
+          retention-days: 14
